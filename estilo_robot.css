@@ -155,3 +155,89 @@ caption
     color: white;
     border: 2px solid black;
 }
+
+/*------------------------------------------------------------------*/
+/*generar particulas*/
+.particula {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    animation: explotar 0.7s ease-out forwards;
+}
+
+@keyframes explotar {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) scale(0);
+        opacity: 0;
+    }
+}
+
+.restos-figura {
+    background-image:
+        linear-gradient(45deg, currentColor 50%, transparent 50%),
+        linear-gradient(-30deg, currentColor 50%, transparent 50%),
+        radial-gradient(circle, currentColor 60%, transparent 65%),
+        linear-gradient(15deg, currentColor 50%, transparent 50%),
+        linear-gradient(-60deg, currentColor 50%, transparent 50%),
+        radial-gradient(circle, currentColor 60%, transparent 65%),
+        linear-gradient(70deg, currentColor 50%, transparent 50%),
+        linear-gradient(-15deg, currentColor 50%, transparent 50%);
+    background-size: 
+        10px 7px, 
+        8px 11px, 
+        7px 7px, 
+        11px 6px, 
+        7px 10px, 
+        6px 6px, 
+        9px 8px, 
+        8px 7px;
+    background-position: 
+        18% 22%, 
+        78% 18%, 
+        52% 28%, 
+        24% 72%, 
+        76% 68%, 
+        46% 78%, 
+        64% 48%, 
+        32% 46%;
+    background-repeat: no-repeat;
+}
+
+/*________________________________________________________________________________________*/
+/*configuraciones de la ventana de mensajes del juego*/
+#mensaje-juego
+{
+    position: fixed; /*lo saca del flujo, flota*/
+    bottom: 50%; /* separacion del margen inferior*/
+    left: 50%;
+    transform: translatex(-50%) translatey(20px);
+
+    background-color: #1e293b;
+    color: #ffffff;
+    padding: 14px 26px;
+    border-radius: 10px;
+    border: 5px solid #38bdf8;
+
+    font-family: sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 8px 20px rgba(13, 13, 13, 0.91);
+
+    opacity: 0;
+    pointer-events: none; /**evita bloquear clics mientras esta oculto*/
+    transition: opacity 0.3s ease, transform 0.3s ease; /*amima la transicion en 0.3s*/
+    z-index: 1000;
+}
+
+#mensaje-juego.mostrar
+{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);;
+}

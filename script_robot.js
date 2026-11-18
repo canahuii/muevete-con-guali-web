@@ -1,8 +1,18 @@
 // almacena las cordenadas de las figuras
-let triangulo = "";
 let circulo = "";
 let cuadrado = "";
+let triangulo = "";
+const mapaColores = {
+    "rojo": "#f50505",
+    "azul": "#1E90FF",
+    "verde": "#28a745",
+    "amarillo": "#FFD700",
+};
+
 let robot = "00";
+
+let contarAtrapados = 0; //contador de cuantas figuras se han capturado
+let colores;
 
 let movimientos = new Array();
 
@@ -13,6 +23,8 @@ function reiniciar()
 
     /*agregar el robot en la posicion 0,0 */
     document.getElementById("00").innerHTML = '<img src = "figuras/robotDerecha.png" height = "100" width = "100">';
+    
+    //genera las figuras de manera aleatoria 
     let figuras = aleatorio();
 
     url = "figuras/circulo/ci" + figuras[0]+".png"
@@ -23,20 +35,19 @@ function reiniciar()
     
     url =  "figuras/triangulo/t"+ figuras[2]+".png"
     document.getElementById(triangulo).innerHTML = '<img src="' + url + '" height="95" width="95">';
-    document.getElementById("historial").innerHTML = "";
-
+    
     //se crea la tabla con 1 fila y 5 columnas
     tabla(1, 5,"No se han ingresado movimientos");
 }
 function aleatorio()
 {
-    let vector= ["Amarillo" , "Azul" , "Rojo"];
+    colores= ["Amarillo" , "Azul" , "Rojo"];
 
     // desordenar la matriz de colores de manera aleatoria
-    for(let i = (vector.length - 1); i > 0;i--)
+    for(let i = (colores.length - 1); i > 0;i--)
     {
          let j = Math.floor(Math.random()* (i + 1));
-        [vector[i],vector[j]] = [vector[j] , vector[i]];
+        [colores[i],colores[j]] = [colores[j] , colores[i]];
     }
 
     //genera las posiciones de la figuras de manera aleatoria
@@ -57,7 +68,7 @@ function aleatorio()
         cuadrado += (Math.floor(Math.random() * 5)).toString();
     }while (triangulo == cuadrado || circulo  == cuadrado || cuadrado == "00"); // para evitar colicion entre objetos
 
-    return vector;
+    return colores;
 }
 
 // limpiar toda la tabla 
@@ -71,9 +82,12 @@ function limpiar()
             document.getElementById(posicion).innerHTML = "";
         }
     }
-    listaMov = []
-    robot = "00";
-    direccionRob = 1;
+    
+    document.getElementById("historial").innerHTML = ""; //limpia el hostorial visual 
+    listaMov = [] //limpia la liusta de movimientos numericos
+    robot = "00"; //resetea la posicion del robot
+    direccionRob = 1; //resetea la orientacion del robot
+    contarAtrapados = 0; // resetea la cantidad de objetos recogidos
 }
 
 
@@ -205,6 +219,7 @@ async function dibujarRobot()
                 break;
         }
     }
+    yaGano();
  
 }
 function nuevaDireccion(giro)
@@ -232,8 +247,112 @@ function nuevaDireccion(giro)
             document.getElementById(robot).innerHTML = '<img src="figuras/robotIzquierda.png" height="100" width="100">';
             break
     }
+
+    //verificar si hubo alguna colision
+    colision();
 }
 function pausar(ms)
 {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+//------------------------------------------------------------------------
+//colisiones con los objetos 
+function colision()
+{
+    if (robot == circulo)
+    {
+        //alert(`Has atrapado el circulo de color ${colores[0]}`); //mensaje
+        mostrarMensaje(`Has atrapado el circulo de color ${colores[0]}`, mapaColores[colores[0].toLowerCase()]);
+
+        trozos(colores[0]); //generar particulas del color de la figura
+
+        circulo = ""; // se limpia la posicion del objeto
+        contarAtrapados++; //cuenta cuantas figura sean han atrapado
+    }
+    if (robot == cuadrado)
+    {
+        mostrarMensaje(`Has atrapado el cuadrado de color ${colores[1]}`, mapaColores[colores[1].toLowerCase()]);
+
+
+        trozos(colores[1])
+        cuadrado = "";
+        contarAtrapados++;
+    }
+        if (robot == triangulo)
+    {
+        mostrarMensaje(`Has atrapado el triangulo de color ${colores[2]}`, mapaColores[colores[2].toLowerCase()]);
+
+        trozos(colores[2])
+        triangulo = "";
+        contarAtrapados++;
+        
+    }
+}
+function  yaGano()
+{
+    if (contarAtrapados >= 3)
+    {
+        alert("FELICIDADES HAS GANADO, RECOGISTE TODOS LOS OBJETOS");
+    }
+
+}
+//--------------------------------------------------------------------------
+//particulas de celebracion
+//____________________________________________________________________________
+function lanzarParticulas(celdaElemento, color) {
+    // Obtenemos el centro exacto de la celda en la pantalla
+    const rect = celdaElemento.getBoundingClientRect();
+    const centroX = rect.left + rect.width / 2;
+    const centroY = rect.top + rect.height / 2;
+
+    const colores = [color, '#FFD700', '#FFFFFF']; // Color de la figura + dorado + blanco
+
+    for (let i = 0; i < 20; i++) {
+        const particula = document.createElement('div');
+        particula.className = 'particula';
+        particula.style.left = `${centroX}px`;
+        particula.style.top = `${centroY}px`;
+        particula.style.backgroundColor = colores[i % colores.length];
+
+        // Calculamos una dirección y distancia aleatoria para cada partícula
+        const angulo = Math.random() * Math.PI * 2;
+        const distancia = 30 + Math.random() * 60;
+        particula.style.setProperty('--dx', `${Math.cos(angulo) * distancia}px`);
+        particula.style.setProperty('--dy', `${Math.sin(angulo) * distancia}px`);
+
+        document.body.appendChild(particula);
+
+        // Eliminamos el div cuando termina la animación para no saturar la memoria
+        setTimeout(() => particula.remove(), 700);
+    }
+}
+
+function trozos(color)
+{
+        const colorActual = mapaColores[color.toLowerCase()];
+        const celda = document.getElementById(robot);
+
+
+        lanzarParticulas(celda, colorActual);
+        
+        celda.classList.add('restos-figura');
+        celda.style.color = colorActual;
+}
+
+let temporizadorMensaje;
+
+function mostrarMensaje(mensaje, colorBorde)
+{
+    const caja = document.getElementById("mensaje-juego");
+    caja.textContent = mensaje;
+    caja.style.borderColor = colorBorde;
+    caja.classList.add("mostrar");
+
+    clearTimeout(temporizadorMensaje);
+
+    temporizadorMensaje = setTimeout(() => 
+    {
+        caja.classList.remove("mostrar");
+    }, 2500);
 }
